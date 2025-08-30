@@ -1,2 +1,2 @@
-# otus_project_2
-OTUS C++ Professional final project
+# otus_project
+OTUS C++ Professional. Final project
