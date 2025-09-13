@@ -12,6 +12,11 @@ inline void usage() {
   std::cerr << "Usage: Client <host> <port> <my UUID> <remote UUID>\n";
 }
 
+inline void authorize(Client &c, boost::uuids::uuid &from) {
+  TransferMessage transferMessage(AuthMessage(from).toJson());
+  c.write(transferMessage);
+}
+
 int main(int argc, char *argv[]) {
   try {
     if (argc != 5) {
@@ -43,9 +48,7 @@ int main(int argc, char *argv[]) {
 
     std::thread t([&io_context]() { io_context.run(); });
 
-    // Send authorize message
-    TransferMessage transferMessage(AuthMessage(from).toJson());
-    c.write(transferMessage);
+    authorize(c, from);
 
     char line[TransferMessage::MAX_BODY_LENGTH + 1];
 
