@@ -88,14 +88,14 @@ bool Client::processMessage(const TransferMessage &readMessage) {
   }
 
   if (msg.isText()) {
-    TextMessageJson *json = static_cast<TextMessageJson *>(msg.json);
+    TextMessageJson *json = static_cast<TextMessageJson *>(msg.json.get());
     std::cout << "[Получено сообщение] " << json->text << std::endl;
 
     StatusMessage statusMessage(msg.from, msg.id, Message::STATUS_RECEIVED);
     TransferMessage transferMessage(statusMessage.toJson());
     write(transferMessage);
   } else if (msg.isStatus()) {
-    StatusMessageJson *json = static_cast<StatusMessageJson *>(msg.json);
+    StatusMessageJson *json = static_cast<StatusMessageJson *>(msg.json.get());
     std::cout << "[Статус сообщения] " << json->status << std::endl;
   } else {
     throw std::runtime_error("Undefined message received");

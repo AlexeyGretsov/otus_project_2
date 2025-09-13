@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include <boost/uuid/random_generator.hpp>
@@ -11,7 +12,7 @@ struct MessageJson {
   virtual ~MessageJson() {}
 
   virtual std::string toString() const = 0;
-  virtual MessageJson *copy() const = 0;
+  virtual std::shared_ptr<MessageJson> copy() const = 0;
 
   std::string type;
 };
@@ -19,7 +20,7 @@ struct MessageJson {
 struct AuthMessageJson : public MessageJson {
   AuthMessageJson();
 
-  AuthMessageJson *copy() const override;
+  std::shared_ptr<MessageJson> copy() const override;
   std::string toString() const override;
 };
 
@@ -27,7 +28,7 @@ struct TextMessageJson : public MessageJson {
   TextMessageJson();
   TextMessageJson(std::string_view text);
 
-  TextMessageJson *copy() const override;
+  std::shared_ptr<MessageJson> copy() const override;
   std::string toString() const override;
 
   std::string text;
@@ -38,7 +39,7 @@ struct StatusMessageJson : public MessageJson {
   StatusMessageJson(const boost::uuids::uuid message_id,
                     std::string_view status);
 
-  StatusMessageJson *copy() const override;
+  std::shared_ptr<MessageJson> copy() const override;
   std::string toString() const override;
 
   boost::uuids::uuid message_id;
@@ -69,7 +70,7 @@ struct Message {
   boost::uuids::uuid from;
   boost::uuids::uuid to;
   time_t date{0};
-  MessageJson *json{nullptr};
+  std::shared_ptr<MessageJson> json;
 };
 
 struct TextMessage : public Message {

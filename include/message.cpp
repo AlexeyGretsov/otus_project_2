@@ -8,25 +8,25 @@
 #include <nlohmann/json.hpp>
 
 namespace {
-MessageJson *createMessageJson(nlohmann::json &parsed_json) {
+std::shared_ptr<MessageJson> createMessageJson(nlohmann::json &parsed_json) {
   auto json = parsed_json["message"]["json"];
   std::string type(json["type"]);
 
   if (type == TextMessageJson{}.type) {
-    TextMessageJson *result = new TextMessageJson();
+    std::shared_ptr<TextMessageJson> result{new TextMessageJson()};
     result->text = json["text"];
 
     return result;
   } else if (type == StatusMessageJson().type) {
     boost::uuids::string_generator gen;
-    StatusMessageJson *result = new StatusMessageJson();
+    std::shared_ptr<StatusMessageJson> result{new StatusMessageJson()};
     result->message_id = gen(std::string(json["message_id"]));
     result->status = json["status"];
 
     return result;
   } else if (type == AuthMessageJson().type) {
 
-    return new AuthMessageJson();
+    return std::shared_ptr<AuthMessageJson>{new AuthMessageJson()};
   }
 
   return nullptr;
@@ -38,7 +38,9 @@ const std::string Message::STATUS_RECEIVED = "received";
 
 AuthMessageJson::AuthMessageJson() { type = "auth"; }
 
-AuthMessageJson *AuthMessageJson::copy() const { return new AuthMessageJson(); }
+std::shared_ptr<MessageJson> AuthMessageJson::copy() const {
+  return std::shared_ptr<MessageJson>{new AuthMessageJson()};
+}
 
 std::string AuthMessageJson::toString() const {
   nlohmann::json json;
@@ -53,8 +55,8 @@ TextMessageJson::TextMessageJson(std::string_view text) {
   this->text = text;
 }
 
-TextMessageJson *TextMessageJson::copy() const {
-  return new TextMessageJson(text);
+std::shared_ptr<MessageJson> TextMessageJson::copy() const {
+  return std::shared_ptr<MessageJson>{new TextMessageJson(text)};
 }
 
 std::string TextMessageJson::toString() const {
@@ -73,8 +75,9 @@ StatusMessageJson::StatusMessageJson(const boost::uuids::uuid message_id,
   this->status = status;
 }
 
-StatusMessageJson *StatusMessageJson::copy() const {
-  return new StatusMessageJson(message_id, status);
+std::shared_ptr<MessageJson> StatusMessageJson::copy() const {
+  return std::shared_ptr<MessageJson>{
+      new StatusMessageJson(message_id, status)};
 }
 
 std::string StatusMessageJson::toString() const {
@@ -99,13 +102,7 @@ Message::Message(const Message &other) {
   from = other.from;
   to = other.to;
   date = other.date;
-  if (json) {
-    delete json;
-    json = nullptr;
-  }
-  if (other.json) {
-    json = other.json->copy();
-  }
+  json = other.json->copy();
 }
 
 Message::Message(Message &&other) {
@@ -116,11 +113,7 @@ Message::Message(Message &&other) {
   json = std::exchange(other.json, nullptr);
 }
 
-Message::~Message() {
-  if (json) {
-    delete json;
-  }
-}
+Message::~Message() {}
 
 Message &Message::operator=(const Message &other) {
   if (this != &other) {
@@ -128,13 +121,7 @@ Message &Message::operator=(const Message &other) {
     from = other.from;
     to = other.to;
     date = other.date;
-    if (json) {
-      delete json;
-      json = nullptr;
-    }
-    if (other.json) {
-      json = other.json->copy();
-    }
+    json = other.json->copy();
   }
 
   return *this;
@@ -215,12 +202,12 @@ TextMessage::TextMessage(const boost::uuids::uuid &from,
   this->from = from;
   this->to = to;
 
-  json = new TextMessageJson(text);
+  json.reset(new TextMessageJson(text));
 }
 
 AuthMessage::AuthMessage(const boost::uuids::uuid &my) : Message() {
   from = my;
-  json = new AuthMessageJson();
+  json.reset(new AuthMessageJson());
 }
 
 StatusMessage::StatusMessage(const boost::uuids::uuid clientUuid,
@@ -230,5 +217,5 @@ StatusMessage::StatusMessage(const boost::uuids::uuid clientUuid,
 
 {
   to = clientUuid;
-  json = new StatusMessageJson(message_id, status);
+  json.reset(new StatusMessageJson(message_id, status));
 }
