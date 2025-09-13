@@ -49,11 +49,13 @@ set(SERVER_HEADERS ${SERVER_HEADERS}
 
 set(CLIENT_SOURCES ${CLIENT_SOURCES}
 	client_main.cpp
+	net/client.cpp
 	include/message.cpp
 )
 
 set(CLIENT_HEADERS ${CLIENT_HEADERS}
 	include/message.h
+	net/client.h
 )
 
 add_executable(${CMAKE_PROJECT_NAME}_server 

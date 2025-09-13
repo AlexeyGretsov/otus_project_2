@@ -22,7 +22,7 @@ DbConnectionPtr createDbConnection(const DbConnParams &params) {
 
     return nullptr;
   }
-  
+
   DbConnectionPtr dbConn(new Db::PgDbConnection());
   if (not dbConn->connect(params.dbHost, params.dbPort, params.dbName,
                           params.dbUser, params.dbPass)) {
