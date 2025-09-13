@@ -116,7 +116,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/server_config.json
 install(TARGETS ${CMAKE_PROJECT_NAME}_server RUNTIME DESTINATION bin)
 install(TARGETS ${CMAKE_PROJECT_NAME}_client RUNTIME DESTINATION bin)
 install(TARGETS ${CMAKE_PROJECT_NAME}_tests RUNTIME DESTINATION bin)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_config.json RUNTIME DESTINATION bin)
+install(FILES server_config.json DESTINATION bin)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CPACK_GENERATOR TGZ)
