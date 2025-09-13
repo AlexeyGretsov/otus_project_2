@@ -1,6 +1,15 @@
 #include "db/db_connection.h"
 
 namespace Db {
+void DbConnParams::clear() {
+  dbHost.clear();
+  dbPort = 0;
+  ;
+  dbName.clear();
+  dbUser.clear();
+  dbPass.clear();
+}
+
 DbConnectionPtr createDbConnection(const DbConnParams &params) {
   if (params.dbHost.empty()) {
     std::cerr << "Invalid DB host";

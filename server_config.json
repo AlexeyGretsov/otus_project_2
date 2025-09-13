@@ -1,0 +1,12 @@
+{
+	"config" : {
+		"db" : {
+			"type" : "postgres",
+			"dbHost" : "localhost",
+			"dbPort" : "5432",
+			"dbName" : "otus_messendger",
+			"dbUser" : "postgres",
+			"dbPass" : "postgres"
+		}
+	}
+}

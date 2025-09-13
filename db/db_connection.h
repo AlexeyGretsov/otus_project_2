@@ -10,6 +10,8 @@ using DbConnectionPtr = std::shared_ptr<Db::IDbConnection>;
 
 namespace Db {
 struct DbConnParams {
+  void clear();
+
   std::string dbHost;
   int dbPort{0};
   std::string dbName;

@@ -15,6 +15,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 set(SERVER_SOURCES ${SERVER_SOURCES}
+	config.cpp
 	main.cpp
 	db/pg_db_connection.cpp
 	db/db_manager.cpp
@@ -26,6 +27,7 @@ set(SERVER_SOURCES ${SERVER_SOURCES}
 )
 
 set(SERVER_HEADERS ${SERVER_HEADERS}
+	config.h
 	db/i_db_connection.h
 	db/pg_db_connection.h
 	db/db_connection.h
@@ -108,9 +110,13 @@ set_target_properties(${CMAKE_PROJECT_NAME}_server PROPERTIES CXX_STANDARD 17 CX
 set_target_properties(${CMAKE_PROJECT_NAME}_client PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
 set_target_properties(${CMAKE_PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/server_config.json 
+	${CMAKE_CURRENT_BINARY_DIR}/server_config.json)
+
 install(TARGETS ${CMAKE_PROJECT_NAME}_server RUNTIME DESTINATION bin)
 install(TARGETS ${CMAKE_PROJECT_NAME}_client RUNTIME DESTINATION bin)
 install(TARGETS ${CMAKE_PROJECT_NAME}_tests RUNTIME DESTINATION bin)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_config.json RUNTIME DESTINATION bin)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CPACK_GENERATOR TGZ)

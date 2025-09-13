@@ -3,23 +3,40 @@
 
 #include <boost/asio.hpp>
 
+#include "config.h"
 #include "db/db_connection.h"
 #include "net/server.h"
 
+inline void usage() {
+  std::cerr << "Usage: Server <config file name> <port> [<port> ...]\n";
+}
+
 int main(int argc, char *argv[]) {
   try {
-    if (argc < 2) {
-      std::cerr << "Usage: Server <port> [<port> ...]\n";
-      return 1;
+    if (argc < 3) {
+      std::cerr << "Arguments not found\n";
+      usage();
+      return EXIT_FAILURE;
     }
 
-    std::string configName{"server.json"};
-    Db::DbConnParams dbConnParams;
-    dbConnParams.dbHost = "localhost";
-    dbConnParams.dbPort = 5432;
-    dbConnParams.dbName = "otus_messendger";
-    dbConnParams.dbUser = "postgres";
-    dbConnParams.dbPass = "postgres";
+    if (not std::strlen(argv[1])) {
+      std::cerr << "Empty config file name\n";
+      usage();
+      return EXIT_FAILURE;
+    }
+    Config cfg(argv[1]);
+    if (not cfg.load()) {
+      usage();
+      return EXIT_FAILURE;
+    }
+
+    auto dbConnParams = cfg.getDbParams();
+    std::cout << "DB connection parameters:" << std::endl;
+    std::cout << " - host: " << dbConnParams.dbHost << std::endl;
+    std::cout << " - port: " << dbConnParams.dbPort << std::endl;
+    std::cout << " - name: " << dbConnParams.dbName << std::endl;
+    std::cout << " - user: " << dbConnParams.dbUser << std::endl;
+    std::cout << " - pass: " << dbConnParams.dbPass << std::endl;
 
     boost::asio::io_context io_context;
 
