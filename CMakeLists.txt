@@ -23,11 +23,6 @@ set(SERVER_SOURCES ${SERVER_SOURCES}
 	net/server.cpp
 	net/session_manager.cpp
 	net/session.cpp
-
-	tests/db_test.cpp
-	tests/json_test.cpp
-	tests/db_manager_test.cpp
-	tests/message_test.cpp
 )
 
 set(SERVER_HEADERS ${SERVER_HEADERS}
@@ -40,11 +35,6 @@ set(SERVER_HEADERS ${SERVER_HEADERS}
 	net/server.h
 	net/session_manager.h
 	net/session.h
-
-	tests/db_test.h
-	tests/json_test.h
-	tests/db_manager_test.h
-	tests/message_test.h
 )
 
 set(CLIENT_SOURCES ${CLIENT_SOURCES}
@@ -58,6 +48,31 @@ set(CLIENT_HEADERS ${CLIENT_HEADERS}
 	net/client.h
 )
 
+set(TESTS_SOURCES ${TESTS_SOURCES}
+	tests/main.cpp
+	db/pg_db_connection.cpp
+	db/db_manager.cpp
+	db/db_connection.cpp
+	include/message.cpp
+
+	tests/db_test.cpp
+	tests/json_test.cpp
+	tests/db_manager_test.cpp
+	tests/message_test.cpp
+)
+
+set(TESTS_HEADERS ${TESTS_HEADERS}
+	db/db_manager.h
+	db/pg_db_connection.h
+	db/db_connection.h
+	include/message.h
+
+	tests/db_test.h
+	tests/json_test.h
+	tests/db_manager_test.h
+	tests/message_test.h
+)
+
 add_executable(${CMAKE_PROJECT_NAME}_server 
 	${SERVER_SOURCES}
 	${SERVER_HEADERS}
@@ -66,6 +81,11 @@ add_executable(${CMAKE_PROJECT_NAME}_server
 add_executable(${CMAKE_PROJECT_NAME}_client
 	${CLIENT_SOURCES}
 	${CLIENT_HEADERS}
+)
+
+add_executable(${CMAKE_PROJECT_NAME}_tests
+	${TESTS_SOURCES}
+	${TESTS_HEADERS}
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}_server PRIVATE 
@@ -78,11 +98,19 @@ target_link_libraries(${CMAKE_PROJECT_NAME}_client PRIVATE
 	${Boost_LIBRARIES} 
 )
 
+target_link_libraries(${CMAKE_PROJECT_NAME}_tests PRIVATE 
+	${Boost_LIBRARIES} 
+	PostgreSQL::PostgreSQL 
+	nlohmann_json
+)
+
 set_target_properties(${CMAKE_PROJECT_NAME}_server PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
 set_target_properties(${CMAKE_PROJECT_NAME}_client PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
+set_target_properties(${CMAKE_PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
 
 install(TARGETS ${CMAKE_PROJECT_NAME}_server RUNTIME DESTINATION bin)
 install(TARGETS ${CMAKE_PROJECT_NAME}_client RUNTIME DESTINATION bin)
+install(TARGETS ${CMAKE_PROJECT_NAME}_tests RUNTIME DESTINATION bin)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CPACK_GENERATOR TGZ)
