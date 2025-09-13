@@ -18,7 +18,11 @@ set(SERVER_SOURCES ${SERVER_SOURCES}
 	main.cpp
 	db/pg_db_connection.cpp
 	db/db_manager.cpp
+	db/db_connection.cpp
 	include/message.cpp
+	net/server.cpp
+	net/session_manager.cpp
+	net/session.cpp
 
 	tests/db_test.cpp
 	tests/json_test.cpp
@@ -29,8 +33,13 @@ set(SERVER_SOURCES ${SERVER_SOURCES}
 set(SERVER_HEADERS ${SERVER_HEADERS}
 	db/i_db_connection.h
 	db/pg_db_connection.h
+	db/db_connection.h
 	db/db_manager.h
 	include/message.h
+	include/i_messages_processor.h
+	net/server.h
+	net/session_manager.h
+	net/session.h
 
 	tests/db_test.h
 	tests/json_test.h
