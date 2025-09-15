@@ -13,7 +13,7 @@ inline void usage() {
 }
 
 inline void authorize(Client &c, boost::uuids::uuid &from) {
-  TransferMessage transferMessage(AuthMessage(from).toJson());
+  TransferMessageV2 transferMessage(AuthMessage(from).toJson());
   c.write(transferMessage);
 }
 
@@ -50,15 +50,16 @@ int main(int argc, char *argv[]) {
 
     authorize(c, from);
 
-    char line[TransferMessage::MAX_BODY_LENGTH + 1];
+    //    char line[TransferMessage::MAX_BODY_LENGTH + 1];
+    std::string line;
 
-    while (std::cin.getline(line, TransferMessage::MAX_BODY_LENGTH + 1)) {
-      if (std::strlen(line) == 0) {
+    while (std::getline(std::cin, line)) {
+      if (line.size() == 0) {
         continue;
       }
       TextMessage msg(from, to, line);
 
-      c.write(TransferMessage(msg.toJson()));
+      c.write(TransferMessageV2(msg.toJson()));
     }
 
     c.close();

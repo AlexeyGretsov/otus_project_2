@@ -27,10 +27,11 @@ void Session::doReadHeader() {
   auto self(shared_from_this());
   boost::asio::async_read(
       socket,
-      boost::asio::buffer(readMessage.getData(), TransferMessage::headerLength),
+      boost::asio::buffer(&readMessage.getSizeBuffer(),
+                          TransferMessageV2::HEADER_SIZE),
       [this, self](boost::system::error_code ec, std::size_t size) {
         if (!ec) {
-          if (readMessage.decodeHeader()) {
+          if (readMessage.getLength()) {
             doReadBody();
           }
         } else {
@@ -45,7 +46,7 @@ void Session::doReadBody() {
   auto self(shared_from_this());
   boost::asio::async_read(
       socket,
-      boost::asio::buffer(readMessage.getBody(), readMessage.getBodyLength()),
+      boost::asio::buffer(readMessage.getBodyBuffer(), readMessage.getLength()),
       [this, self](boost::system::error_code ec, std::size_t size) {
         if (!ec) {
           saveMessage(readMessage);
@@ -61,9 +62,7 @@ void Session::doReadBody() {
 void Session::doWrite() {
   auto self(shared_from_this());
   boost::asio::async_write(
-      socket,
-      boost::asio::buffer(writeMessages.front().getData(),
-                          writeMessages.front().length()),
+      socket, writeMessages.front().as_buffers(),
       [this, self](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
           auto sentMsg = writeMessages.front();
@@ -86,10 +85,9 @@ void Session::doWrite() {
       });
 }
 
-bool Session::saveMessage(const TransferMessage &readMessage) {
+bool Session::saveMessage(const TransferMessageV2 &readMessage) {
   Message msg;
-  if (not msg.fromJson(
-          std::string(readMessage.getBody(), readMessage.getBodyLength()))) {
+  if (not msg.fromJson(readMessage.getBody())) {
     std::cerr << "Failed to parse received message" << std::endl;
 
     return false;
@@ -156,7 +154,7 @@ void Session::checkProcessedMessages() {
       if (msg.isValid()) {
         std::string s = msg.toJson();
 
-        TransferMessage transferMsg{msg.toJson()};
+        TransferMessageV2 transferMsg{msg.toJson()};
 
         writeMessages.push_back(transferMsg);
       }
@@ -169,7 +167,7 @@ void Session::checkProcessedMessages() {
   }
 }
 
-bool Session::clearProcessedMessage(const TransferMessage &transferMessage) {
+bool Session::clearProcessedMessage(const TransferMessageV2 &transferMessage) {
   Message msg;
   msg.fromJson(transferMessage.getBody());
 

@@ -6,8 +6,9 @@
 
 #include "include/i_messages_processor.h"
 #include "include/transfer_message.h"
+#include "include/transfer_message_v2.h"
 
-typedef std::deque<TransferMessage> TransferMessageQueue;
+typedef std::deque<TransferMessageV2> TransferMessageQueue;
 
 using MessagesProcessorPtr = std::shared_ptr<MessagesProcessor>;
 

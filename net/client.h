@@ -6,18 +6,18 @@
 #include <boost/asio.hpp>
 
 #include "include/message.h"
-#include "include/transfer_message.h"
+#include "include/transfer_message_v2.h"
 
 using boost::asio::ip::tcp;
 
-typedef std::deque<TransferMessage> TransferMessageQueue;
+typedef std::deque<TransferMessageV2> TransferMessageQueue;
 
 class Client {
 public:
   Client(boost::asio::io_context &io_context,
          const tcp::resolver::results_type &endpoints);
 
-  void write(const TransferMessage &msg);
+  void write(const TransferMessageV2 &msg);
   void close();
 
 private:
@@ -27,10 +27,10 @@ private:
   void doWrite();
 
 private:
-  bool processMessage(const TransferMessage &readMessage);
+  bool processMessage(const TransferMessageV2 &readMessage);
 
   boost::asio::io_context &io_context;
   tcp::socket socket;
-  TransferMessage readMessage;
+  TransferMessageV2 readMessage;
   TransferMessageQueue writeMessages;
 };

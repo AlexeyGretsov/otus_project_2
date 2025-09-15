@@ -21,6 +21,7 @@ set(SERVER_SOURCES ${SERVER_SOURCES}
 	db/db_manager.cpp
 	db/db_connection.cpp
 	include/message.cpp
+	include/transfer_message_v2.cpp
 	net/server.cpp
 	net/session_manager.cpp
 	net/session.cpp
@@ -33,6 +34,7 @@ set(SERVER_HEADERS ${SERVER_HEADERS}
 	db/db_connection.h
 	db/db_manager.h
 	include/message.h
+	include/transfer_message_v2.h
 	include/i_messages_processor.h
 	net/server.h
 	net/session_manager.h
@@ -43,10 +45,12 @@ set(CLIENT_SOURCES ${CLIENT_SOURCES}
 	client_main.cpp
 	net/client.cpp
 	include/message.cpp
+	include/transfer_message_v2.cpp
 )
 
 set(CLIENT_HEADERS ${CLIENT_HEADERS}
 	include/message.h
+	include/transfer_message_v2.h
 	net/client.h
 )
 

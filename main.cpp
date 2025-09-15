@@ -7,11 +7,15 @@
 #include "db/db_connection.h"
 #include "net/server.h"
 
+#include "include/transfer_message_v2.h"
+
 inline void usage() {
   std::cerr << "Usage: Server <config file name> <port> [<port> ...]\n";
 }
 
 int main(int argc, char *argv[]) {
+
+  TransferMessageV2 m;
   try {
     if (argc < 3) {
       std::cerr << "Arguments not found\n";

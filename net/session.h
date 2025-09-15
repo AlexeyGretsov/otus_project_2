@@ -22,13 +22,14 @@ private:
   void doReadHeader();
   void doReadBody();
   void doWrite();
-  bool saveMessage(const TransferMessage &readMessage);
+  bool saveMessage(const TransferMessageV2 &readMessage);
   void checkProcessedMessages() override;
-  bool clearProcessedMessage(const TransferMessage &transferMessage);
+  bool clearProcessedMessage(const TransferMessageV2 &transferMessage);
 
   boost::uuids::uuid clientUuid;
   tcp::socket socket;
-  TransferMessage readMessage;
+  TransferMessageV2 readMessage;
+
   TransferMessageQueue writeMessages;
   DbConnectionPtr dbConnectionPtr;
   SessionsManager &sessionManager;

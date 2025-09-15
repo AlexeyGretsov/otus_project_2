@@ -6,7 +6,7 @@ Client::Client(boost::asio::io_context &io_context,
   doConnect(endpoints);
 }
 
-void Client::write(const TransferMessage &msg) {
+void Client::write(const TransferMessageV2 &msg) {
   boost::asio::post(io_context, [this, msg]() {
     bool write_in_progress = !writeMessages.empty();
 
@@ -34,9 +34,10 @@ void Client::doConnect(const tcp::resolver::results_type &endpoints) {
 void Client::doReadHeader() {
   boost::asio::async_read(
       socket,
-      boost::asio::buffer(readMessage.getData(), TransferMessage::headerLength),
-      [this](boost::system::error_code ec, std::size_t /*length*/) {
-        if (!ec && readMessage.decodeHeader()) {
+      boost::asio::buffer(&readMessage.getSizeBuffer(),
+                          TransferMessageV2::HEADER_SIZE),
+      [this](boost::system::error_code ec, std::size_t length) {
+        if (!ec && readMessage.getLength()) {
           doReadBody();
         } else {
           socket.close();
@@ -47,8 +48,8 @@ void Client::doReadHeader() {
 void Client::doReadBody() {
   boost::asio::async_read(
       socket,
-      boost::asio::buffer(readMessage.getBody(), readMessage.getBodyLength()),
-      [this](boost::system::error_code ec, std::size_t /*length*/) {
+      boost::asio::buffer(readMessage.getBodyBuffer(), readMessage.getLength()),
+      [this](boost::system::error_code ec, std::size_t length) {
         if (!ec) {
           if (not processMessage(readMessage)) {
             socket.close();
@@ -63,9 +64,7 @@ void Client::doReadBody() {
 
 void Client::doWrite() {
   boost::asio::async_write(
-      socket,
-      boost::asio::buffer(writeMessages.front().getData(),
-                          writeMessages.front().length()),
+      socket, writeMessages.front().as_buffers(),
       [this](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
           writeMessages.pop_front();
@@ -78,10 +77,9 @@ void Client::doWrite() {
       });
 }
 
-bool Client::processMessage(const TransferMessage &readMessage) {
+bool Client::processMessage(const TransferMessageV2 &readMessage) {
   Message msg;
-  if (not msg.fromJson(
-          std::string(readMessage.getBody(), readMessage.getBodyLength()))) {
+  if (not msg.fromJson(readMessage.getBody())) {
     std::cerr << "Failed to parse received message" << std::endl;
 
     return false;
@@ -92,7 +90,7 @@ bool Client::processMessage(const TransferMessage &readMessage) {
     std::cout << "[Получено сообщение] " << json->text << std::endl;
 
     StatusMessage statusMessage(msg.from, msg.id, Message::STATUS_RECEIVED);
-    TransferMessage transferMessage(statusMessage.toJson());
+    TransferMessageV2 transferMessage(statusMessage.toJson());
     write(transferMessage);
   } else if (msg.isStatus()) {
     StatusMessageJson *json = static_cast<StatusMessageJson *>(msg.json.get());
