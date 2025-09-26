@@ -2,9 +2,6 @@
 
 #include <iostream>
 
-// #include <boost/asio.hpp>
-// #include <boost/endian.hpp>
-
 TransferMessageV2::TransferMessageV2() {
   size = 0;
   std::fill(body.begin(), body.end(), 0);
