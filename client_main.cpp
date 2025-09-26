@@ -50,7 +50,6 @@ int main(int argc, char *argv[]) {
 
     authorize(c, from);
 
-    //    char line[TransferMessage::MAX_BODY_LENGTH + 1];
     std::string line;
 
     while (std::getline(std::cin, line)) {

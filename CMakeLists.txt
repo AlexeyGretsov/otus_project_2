@@ -8,7 +8,7 @@ enable_testing()
 find_package(GTest REQUIRED)
 find_package(PostgreSQL REQUIRED)
 find_package(nlohmann_json REQUIRED)
-find_package(Boost REQUIRED)
+#find_package(Boost REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
