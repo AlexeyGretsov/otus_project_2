@@ -1,0 +1,138 @@
+cmake_minimum_required(VERSION 3.28)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "") 
+
+project(otus_messendger)
+
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(PostgreSQL REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(Boost REQUIRED)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
+set(SERVER_SOURCES ${SERVER_SOURCES}
+	config.cpp
+	main.cpp
+	db/pg_db_connection.cpp
+	db/db_manager.cpp
+	db/db_connection.cpp
+	include/message.cpp
+	include/transfer_message_v2.cpp
+	net/server.cpp
+	net/session_manager.cpp
+	net/session.cpp
+)
+
+set(SERVER_HEADERS ${SERVER_HEADERS}
+	config.h
+	db/i_db_connection.h
+	db/pg_db_connection.h
+	db/db_connection.h
+	db/db_manager.h
+	include/message.h
+	include/transfer_message_v2.h
+	include/i_messages_processor.h
+	net/server.h
+	net/session_manager.h
+	net/session.h
+)
+
+set(CLIENT_SOURCES ${CLIENT_SOURCES}
+	client_main.cpp
+	net/client.cpp
+	include/message.cpp
+	include/transfer_message_v2.cpp
+)
+
+set(CLIENT_HEADERS ${CLIENT_HEADERS}
+	include/message.h
+	include/transfer_message_v2.h
+	net/client.h
+)
+
+set(TESTS_SOURCES ${TESTS_SOURCES}
+	tests/main.cpp
+	db/pg_db_connection.cpp
+	db/db_manager.cpp
+	db/db_connection.cpp
+	include/message.cpp
+
+	tests/db_test.cpp
+	tests/json_test.cpp
+	tests/db_manager_test.cpp
+	tests/message_test.cpp
+)
+
+set(TESTS_HEADERS ${TESTS_HEADERS}
+	db/db_manager.h
+	db/pg_db_connection.h
+	db/db_connection.h
+	include/message.h
+
+	tests/db_test.h
+	tests/json_test.h
+	tests/db_manager_test.h
+	tests/message_test.h
+)
+
+add_executable(${CMAKE_PROJECT_NAME}_server 
+	${SERVER_SOURCES}
+	${SERVER_HEADERS}
+)
+
+add_executable(${CMAKE_PROJECT_NAME}_client
+	${CLIENT_SOURCES}
+	${CLIENT_HEADERS}
+)
+
+add_executable(${CMAKE_PROJECT_NAME}_tests
+	${TESTS_SOURCES}
+	${TESTS_HEADERS}
+)
+
+target_link_libraries(${CMAKE_PROJECT_NAME}_server PRIVATE 
+	${Boost_LIBRARIES} 
+	PostgreSQL::PostgreSQL 
+	nlohmann_json
+)
+
+target_link_libraries(${CMAKE_PROJECT_NAME}_client PRIVATE 
+	${Boost_LIBRARIES} 
+)
+
+target_link_libraries(${CMAKE_PROJECT_NAME}_tests PRIVATE 
+	${Boost_LIBRARIES} 
+	PostgreSQL::PostgreSQL 
+	nlohmann_json
+)
+
+set_target_properties(${CMAKE_PROJECT_NAME}_server PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
+set_target_properties(${CMAKE_PROJECT_NAME}_client PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
+set_target_properties(${CMAKE_PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON) 
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/server_config.json 
+	${CMAKE_CURRENT_BINARY_DIR}/server_config.json)
+
+install(TARGETS ${CMAKE_PROJECT_NAME}_server RUNTIME DESTINATION bin)
+install(TARGETS ${CMAKE_PROJECT_NAME}_client RUNTIME DESTINATION bin)
+install(TARGETS ${CMAKE_PROJECT_NAME}_tests RUNTIME DESTINATION bin)
+install(FILES server_config.json DESTINATION bin)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(CPACK_GENERATOR TGZ)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(CPACK_GENERATOR DEB)
+endif()
+
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PATCH_VERSION})
+
+set(CPACK_PACKAGE_CONTACT alexey.gretsov@gmail.com)
+
+include(CPack)
+
