@@ -1,8 +1,16 @@
 #include "net/client.h"
 
-Client::Client(boost::asio::io_context &io_context,
+namespace {
+inline void authorize(Client &c, boost::uuids::uuid &from) {
+  TransferMessageV2 transferMessage(AuthMessage(from).toJson());
+  c.write(transferMessage);
+}
+} // namespace
+
+Client::Client(const boost::uuids::uuid &id,
+               boost::asio::io_context &io_context,
                const tcp::resolver::results_type &endpoints)
-    : io_context(io_context), socket(io_context) {
+    : id(id), io_context(io_context), socket(io_context), endpoints(endpoints) {
   doConnect(endpoints);
 }
 
@@ -25,8 +33,12 @@ void Client::doConnect(const tcp::resolver::results_type &endpoints) {
   boost::asio::async_connect(
       socket, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
         if (!ec) {
+          authorize(*this, this->id);
           std::cout << "Connection extablished" << std::endl;
           doReadHeader();
+        } else {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          doConnect(this->endpoints);
         }
       });
 }
@@ -40,7 +52,7 @@ void Client::doReadHeader() {
         if (!ec && readMessage.getLength()) {
           doReadBody();
         } else {
-          socket.close();
+          reconnect();
         }
       });
 }
@@ -57,7 +69,7 @@ void Client::doReadBody() {
           }
           doReadHeader();
         } else {
-          socket.close();
+          reconnect();
         }
       });
 }
@@ -72,7 +84,7 @@ void Client::doWrite() {
             doWrite();
           }
         } else {
-          socket.close();
+          reconnect();
         }
       });
 }
@@ -100,4 +112,11 @@ bool Client::processMessage(const TransferMessageV2 &readMessage) {
   }
 
   return true;
+}
+
+void Client::reconnect() {
+  std::cout << "Lost connetcion with server" << std::endl;
+  socket.close();
+
+  doConnect(endpoints);
 }

@@ -141,7 +141,11 @@ bool Session::saveMessage(const TransferMessageV2 &readMessage) {
 
 void Session::checkProcessedMessages() {
   if (clientUuid.is_nil()) {
-    throw std::runtime_error("No client UUID after authirization");
+    /*
+    Connection already created by still not authorized
+    */
+    std::cerr << "No client UUID after authorization" << std::endl;
+    return;
   }
 
   if (writeMessages.empty()) {

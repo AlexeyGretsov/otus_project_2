@@ -14,7 +14,7 @@ typedef std::deque<TransferMessageV2> TransferMessageQueue;
 
 class Client {
 public:
-  Client(boost::asio::io_context &io_context,
+  Client(const boost::uuids::uuid &id, boost::asio::io_context &io_context,
          const tcp::resolver::results_type &endpoints);
 
   void write(const TransferMessageV2 &msg);
@@ -28,9 +28,12 @@ private:
 
 private:
   bool processMessage(const TransferMessageV2 &readMessage);
+  void reconnect();
 
+  boost::uuids::uuid id;
   boost::asio::io_context &io_context;
   tcp::socket socket;
+  tcp::resolver::results_type endpoints;
   TransferMessageV2 readMessage;
   TransferMessageQueue writeMessages;
 };
